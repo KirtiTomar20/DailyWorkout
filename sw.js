@@ -1,12 +1,25 @@
 // Tiny offline cache for the Daily app.
 // Bump CACHE when you edit files so devices pick up the new version.
-const CACHE = "daily-v1";
+const CACHE = "daily-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./data.js",
   "./manifest.json",
   "./icon.svg",
+  "./images/dumbbell-row.png",
+  "./images/chest-press.png",
+  "./images/shoulder-press.png",
+  "./images/reverse-fly.png",
+  "./images/bicep-curl.png",
+  "./images/dead-bug.png",
+  "./images/chair-squat.png",
+  "./images/romanian-deadlift.png",
+  "./images/glute-bridge.png",
+  "./images/farmer-carry.png",
+  "./images/lateral-raise.png",
+  "./images/triceps-extension.png",
+  "./images/plank.png",
 ];
 
 self.addEventListener("install", (e) => {

@@ -176,10 +176,59 @@
     .check svg { width: 13px; height: 13px; opacity: 0; transform: scale(.6); transition: all .18s; }
     .item.done .check { background: var(--done); border-color: var(--done); }
     .item.done .check svg { opacity: 1; transform: scale(1); stroke: #fff; }
-    .item-text { min-width: 0; }
+    .item-text { min-width: 0; flex: 1; }
     .item-name { font-weight: 550; font-size: 15px; transition: color .18s; }
     .item-detail { font-size: 13px; color: var(--muted); margin-top: 1px; }
     .item.done .item-name { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+
+    /* How-to */
+    .howto-btn {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 0;
+      background: var(--surface-2);
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color .18s, background .18s;
+    }
+    .howto-btn svg { width: 13px; height: 13px; transition: transform .2s; }
+    .howto-btn.open { color: var(--accent); background: var(--accent-soft); }
+    .howto-btn.open svg { transform: rotate(180deg); }
+    .howto {
+      border-top: 1px solid var(--line);
+      padding: 16px;
+      background: var(--surface-2);
+      animation: fade .2s ease;
+    }
+    .howto img {
+      display: block;
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto 14px;
+      aspect-ratio: 3 / 2;
+      object-fit: contain;
+    }
+    .cues { margin: 0; }
+    .cue { display: flex; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line); }
+    .cue:first-child { border-top: 0; }
+    .cue dt {
+      flex: none;
+      width: 74px;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      padding-top: 1px;
+    }
+    .cue dd { margin: 0; font-size: 13.5px; color: var(--text); }
 
     /* Rest day */
     .rest {
@@ -289,6 +338,7 @@
     const PILL_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const todayKey = DAYS[new Date().getDay()];
     let selectedDay = todayKey;
+    const expanded = new Set(); // open "How to" panels (ephemeral, not persisted)
 
     // ---- persistence (auto-resets daily via date stamp) ----
     const stamp = new Date().toISOString().slice(0, 10);
@@ -347,6 +397,14 @@
       return '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     }
 
+    function howtoIcon() {
+      return 'How to <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    }
+
+    function cueRow(label, text) {
+      return '<div class="cue"><dt>' + label + "</dt><dd>" + text + "</dd></div>";
+    }
+
     function renderWorkout() {
       const day = WORKOUT[selectedDay];
       bodyEl.innerHTML = "";
@@ -380,13 +438,17 @@
         card.className = "card";
         bl.items.forEach((it, ii) => {
           const id = itemId(selectedDay, bi, ii);
+          const info = it.info ? EXERCISE_INFO[it.info] : null;
+          const isOpen = expanded.has(id);
+
           const row = document.createElement("div");
           row.className = "item" + (state.checks[id] ? " done" : "");
           row.innerHTML =
             '<div class="check">' + checkSvg() + "</div>" +
             '<div class="item-text"><div class="item-name">' + it.name + "</div>" +
             (it.detail ? '<div class="item-detail">' + it.detail + "</div>" : "") +
-            "</div>";
+            "</div>" +
+            (info ? '<button class="howto-btn' + (isOpen ? " open" : "") + '" type="button">' + howtoIcon() + "</button>" : "");
           row.onclick = () => {
             if (state.checks[id]) delete state.checks[id];
             else state.checks[id] = true;
@@ -394,6 +456,28 @@
             renderWorkout();
           };
           card.appendChild(row);
+
+          if (info) {
+            row.querySelector(".howto-btn").onclick = (e) => {
+              e.stopPropagation();
+              if (expanded.has(id)) expanded.delete(id);
+              else expanded.add(id);
+              renderWorkout();
+            };
+            if (isOpen) {
+              const panel = document.createElement("div");
+              panel.className = "howto";
+              panel.innerHTML =
+                '<img src="' + info.img + '" alt="' + it.name + ' illustration" loading="lazy" />' +
+                '<dl class="cues">' +
+                cueRow("Posture", info.cues.posture) +
+                cueRow("Core", info.cues.core) +
+                cueRow("Breathing", info.cues.breathing) +
+                (info.cues.tip ? cueRow("Tip", info.cues.tip) : "") +
+                "</dl>";
+              card.appendChild(panel);
+            }
+          }
         });
         wrap.appendChild(card);
         bodyEl.appendChild(wrap);

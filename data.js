@@ -16,16 +16,16 @@ const WORKOUT = {
       {
         name: "Strength",
         items: [
-          { name: "Dumbbell rows", detail: "10 lb · 3 × 12" },
-          { name: "Floor chest press", detail: "10 lb · 3 × 10" },
-          { name: "Shoulder press", detail: "7–10 lb · 3 × 8" },
-          { name: "Reverse fly", detail: "3–7 lb · 3 × 12" },
-          { name: "Bicep curl", detail: "7–10 lb · 3 × 10" },
+          { name: "Dumbbell rows", detail: "10 lb · 3 × 12", info: "dumbbellRow" },
+          { name: "Floor chest press", detail: "10 lb · 3 × 10", info: "chestPress" },
+          { name: "Shoulder press", detail: "7–10 lb · 3 × 8", info: "shoulderPress" },
+          { name: "Reverse fly", detail: "3–7 lb · 3 × 12", info: "reverseFly" },
+          { name: "Bicep curl", detail: "7–10 lb · 3 × 10", info: "bicepCurl" },
         ],
       },
       {
         name: "Core",
-        items: [{ name: "Dead bugs", detail: "3 × 10" }],
+        items: [{ name: "Dead bugs", detail: "3 × 10", info: "deadBug" }],
       },
     ],
   },
@@ -48,11 +48,11 @@ const WORKOUT = {
       {
         name: "Strength",
         items: [
-          { name: "Chair squats", detail: "3 × 12" },
-          { name: "Romanian deadlift", detail: "10 lb each hand · 3 × 12" },
-          { name: "Glute bridge", detail: "3 × 15" },
-          { name: "Dumbbell row", detail: "3 × 12" },
-          { name: "Farmer carry", detail: "3 rounds" },
+          { name: "Chair squats", detail: "3 × 12", info: "chairSquat" },
+          { name: "Romanian deadlift", detail: "10 lb each hand · 3 × 12", info: "romanianDeadlift" },
+          { name: "Glute bridge", detail: "3 × 15", info: "gluteBridge" },
+          { name: "Dumbbell row", detail: "3 × 12", info: "dumbbellRow" },
+          { name: "Farmer carry", detail: "3 rounds", info: "farmerCarry" },
         ],
       },
     ],
@@ -83,18 +83,18 @@ const WORKOUT = {
       {
         name: "Strength",
         items: [
-          { name: "Dumbbell rows", detail: "10 lb · 3 × 10–12 / side" },
-          { name: "Dumbbell chest press", detail: "10 lb · 3 × 10–12" },
-          { name: "Lateral raises", detail: "3–7 lb (light) · 3 × 12–15" },
-          { name: "Reverse fly", detail: "3–7 lb · 3 × 12–15" },
-          { name: "Triceps overhead extension", detail: "7–10 lb · 3 × 10–12" },
+          { name: "Dumbbell rows", detail: "10 lb · 3 × 10–12 / side", info: "dumbbellRow" },
+          { name: "Dumbbell chest press", detail: "10 lb · 3 × 10–12", info: "chestPress" },
+          { name: "Lateral raises", detail: "3–7 lb (light) · 3 × 12–15", info: "lateralRaise" },
+          { name: "Reverse fly", detail: "3–7 lb · 3 × 12–15", info: "reverseFly" },
+          { name: "Triceps overhead extension", detail: "7–10 lb · 3 × 10–12", info: "tricepsExtension" },
         ],
       },
       {
         name: "Core",
         items: [
-          { name: "Dead bugs", detail: "3 × 10 / side" },
-          { name: "Plank", detail: "3 rounds × 20–40 sec" },
+          { name: "Dead bugs", detail: "3 × 10 / side", info: "deadBug" },
+          { name: "Plank", detail: "3 rounds × 20–40 sec", info: "plank" },
         ],
       },
     ],
@@ -119,6 +119,130 @@ const WORKOUT = {
     subtitle: "Recover & recharge",
     rest: true,
     blocks: [],
+  },
+};
+
+// ----- EXERCISE INFO -----
+// Shared form guidance + illustration for each main strength/core move.
+// Items above reference these by their `info` key, so a move used on
+// multiple days (e.g. dumbbell rows) only needs one entry here.
+const EXERCISE_INFO = {
+  dumbbellRow: {
+    img: "images/dumbbell-row.png",
+    cues: {
+      posture: "Hinge forward ~45°, flat back, soft knees, gaze down.",
+      core: "Brace your abs and keep shoulders square — no twisting or rounding.",
+      breathing: "Exhale as you pull the weight to your hip, inhale as you lower.",
+      tip: "Lead with the elbow and squeeze the shoulder blade at the top.",
+    },
+  },
+  chestPress: {
+    img: "images/chest-press.png",
+    cues: {
+      posture: "On your back, knees bent, feet flat. Wrists stacked over elbows.",
+      core: "Press low back gently toward the floor; ribs down, don't arch.",
+      breathing: "Exhale as you press up, inhale as you lower with control.",
+      tip: "Stop the lower at floor/elbow level — no need to over-stretch.",
+    },
+  },
+  shoulderPress: {
+    img: "images/shoulder-press.png",
+    cues: {
+      posture: "Sit or stand tall, weights at shoulder height, elbows under wrists.",
+      core: "Squeeze glutes and brace abs so you don't lean back.",
+      breathing: "Exhale pressing overhead, inhale lowering to the shoulders.",
+      tip: "Stop just short of locking out; keep ribs from flaring.",
+    },
+  },
+  reverseFly: {
+    img: "images/reverse-fly.png",
+    cues: {
+      posture: "Hinge forward, flat back, slight elbow bend, arms hanging down.",
+      core: "Keep the spine long and still — move only at the shoulders.",
+      breathing: "Exhale as you raise arms out wide, inhale as you lower.",
+      tip: "Think 'wings' — squeeze shoulder blades, lead with the pinkies.",
+    },
+  },
+  bicepCurl: {
+    img: "images/bicep-curl.png",
+    cues: {
+      posture: "Stand tall, elbows tucked at your sides, shoulders relaxed.",
+      core: "Brace abs so the torso stays still — no swinging or rocking.",
+      breathing: "Exhale curling up, inhale lowering slowly.",
+      tip: "Control the lower for 2–3 seconds; keep elbows pinned.",
+    },
+  },
+  deadBug: {
+    img: "images/dead-bug.png",
+    cues: {
+      posture: "On your back, arms up over chest, knees stacked over hips at 90°.",
+      core: "Press low back into the floor the whole time — this is the point.",
+      breathing: "Exhale as you extend opposite arm and leg, inhale to return.",
+      tip: "Only reach as far as you can keep the back flat. Move slow.",
+    },
+  },
+  chairSquat: {
+    img: "images/chair-squat.png",
+    cues: {
+      posture: "Feet hip-width, chest tall, weight in your heels.",
+      core: "Brace abs; push hips back first as if reaching for the seat.",
+      breathing: "Inhale as you sit back, exhale as you stand up.",
+      tip: "Tap the chair lightly — don't fully sit or relax at the bottom.",
+    },
+  },
+  romanianDeadlift: {
+    img: "images/romanian-deadlift.png",
+    cues: {
+      posture: "Soft knees, flat back, weights close to the legs.",
+      core: "Brace abs and keep the spine long — hinge from the hips, not the waist.",
+      breathing: "Inhale as you hinge down, exhale as you drive hips forward to stand.",
+      tip: "Feel a stretch in the hamstrings; stop before the back rounds.",
+    },
+  },
+  gluteBridge: {
+    img: "images/glute-bridge.png",
+    cues: {
+      posture: "On your back, knees bent, feet flat and hip-width.",
+      core: "Tuck ribs and brace abs so you lift with glutes, not the low back.",
+      breathing: "Exhale as you lift hips, inhale as you lower.",
+      tip: "Squeeze glutes at the top; make a straight line shoulder-to-knee.",
+    },
+  },
+  farmerCarry: {
+    img: "images/farmer-carry.png",
+    cues: {
+      posture: "Stand tall, shoulders back and down, weights at your sides.",
+      core: "Brace abs hard and stay upright — resist leaning to either side.",
+      breathing: "Breathe steadily and evenly; don't hold your breath.",
+      tip: "Take small, controlled steps; keep the weights from swinging.",
+    },
+  },
+  lateralRaise: {
+    img: "images/lateral-raise.png",
+    cues: {
+      posture: "Stand tall, slight elbow bend, light weights at your sides.",
+      core: "Brace abs; keep torso still — no swinging to lift.",
+      breathing: "Exhale as you raise out to shoulder height, inhale to lower.",
+      tip: "Stop at shoulder height; lead with the elbows, not the hands.",
+    },
+  },
+  tricepsExtension: {
+    img: "images/triceps-extension.png",
+    cues: {
+      posture: "Stand tall, one weight held overhead with both hands.",
+      core: "Brace abs and keep ribs down so you don't arch the back.",
+      breathing: "Inhale lowering behind the head, exhale extending up.",
+      tip: "Keep elbows pointing forward and close — only the forearms move.",
+    },
+  },
+  plank: {
+    img: "images/plank.png",
+    cues: {
+      posture: "Forearms under shoulders, body in one straight line head-to-heels.",
+      core: "Brace abs and squeeze glutes; don't let hips sag or pike up.",
+      breathing: "Breathe slow and steady — never hold your breath.",
+      tip: "Quality over time: stop the set when the form breaks.",
+    },
   },
 };
 

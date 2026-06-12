@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f0f12" />
+  <title>Daily · Workout & Meals</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --surface: #ffffff;
+      --surface-2: #f3f1ee;
+      --text: #1b1b1f;
+      --muted: #8a8780;
+      --line: #ececea;
+      --accent: #c2734f;        /* warm terracotta */
+      --accent-soft: #f3e3da;
+      --done: #6f8f6a;          /* muted sage */
+      --radius: 18px;
+      --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f12;
+        --surface: #17171b;
+        --surface-2: #1f1f25;
+        --text: #ecebe8;
+        --muted: #8d8b86;
+        --line: #26262c;
+        --accent: #e08a63;
+        --accent-soft: #2a211c;
+        --done: #8aac84;
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .wrap {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 28px 20px 96px;
+    }
+
+    /* Header */
+    header { margin-bottom: 22px; }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 2px;
+    }
+    .date {
+      font-size: 24px;
+      font-weight: 650;
+      letter-spacing: -.02em;
+      margin: 0;
+    }
+
+    /* Segmented toggle */
+    .seg {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      padding: 4px;
+      margin: 20px 0 24px;
+    }
+    .seg button {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 9px 0;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color .2s, background .2s;
+    }
+    .seg button.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+
+    .view { display: none; animation: fade .25s ease; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    /* Day pills */
+    .pills {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 22px;
+    }
+    .pill {
+      flex: 1;
+      border: 0;
+      background: var(--surface-2);
+      color: var(--muted);
+      font: inherit;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 10px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .18s;
+    }
+    .pill.active { background: var(--accent); color: #fff; }
+    .pill.today:not(.active) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--text); }
+
+    /* Day heading + progress */
+    .dayhead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .dayhead h2 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
+    .dayhead p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .ring { position: relative; width: 52px; height: 52px; flex: none; }
+    .ring svg { transform: rotate(-90deg); }
+    .ring track { fill: none; }
+    .ring .pct {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+
+    /* Cards / blocks */
+    .block { margin-bottom: 22px; }
+    .block-name {
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 8px 4px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 16px;
+      cursor: pointer;
+      border-top: 1px solid var(--line);
+      transition: background .15s;
+    }
+    .item:first-child { border-top: 0; }
+    .item:active { background: var(--surface-2); }
+    .check {
+      width: 22px; height: 22px; flex: none;
+      border-radius: 7px;
+      border: 2px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .18s;
+    }
+    .check svg { width: 13px; height: 13px; opacity: 0; transform: scale(.6); transition: all .18s; }
+    .item.done .check { background: var(--done); border-color: var(--done); }
+    .item.done .check svg { opacity: 1; transform: scale(1); stroke: #fff; }
+    .item-text { min-width: 0; }
+    .item-name { font-weight: 550; font-size: 15px; transition: color .18s; }
+    .item-detail { font-size: 13px; color: var(--muted); margin-top: 1px; }
+    .item.done .item-name { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+
+    /* Rest day */
+    .rest {
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--muted);
+    }
+    .rest .big { font-size: 44px; margin-bottom: 8px; }
+    .rest h2 { color: var(--text); margin: 0 0 6px; font-size: 24px; }
+
+    /* Meals */
+    .chip {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+    .section { margin-bottom: 26px; }
+    .section-head { margin: 0 0 4px 4px; }
+    .section-head h3 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+    .section-cap { margin: 1px 0 12px 4px; font-size: 13px; color: var(--muted); }
+    .opt {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: border-color .18s, background .18s;
+    }
+    .opt.picked { border-color: var(--accent); }
+    .opt-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .opt-title { font-weight: 650; font-size: 15px; display: flex; align-items: center; gap: 9px; }
+    .dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--line); flex: none; transition: all .18s;
+    }
+    .opt.picked .dot { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+    .opt-meta { font-size: 12px; color: var(--accent); font-weight: 600; }
+    .opt ul { margin: 10px 0 0; padding-left: 18px; }
+    .opt.collapsed ul { display: none; }
+    .opt li { font-size: 13.5px; color: var(--muted); margin: 3px 0; }
+    .note-inline {
+      background: var(--accent-soft);
+      color: var(--text);
+      font-size: 13px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      margin-top: 4px;
+    }
+
+    details.note {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 4px 16px;
+      margin-bottom: 10px;
+    }
+    details.note summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    details.note summary::-webkit-details-marker { display: none; }
+    details.note summary::after { content: "+"; color: var(--muted); font-size: 20px; font-weight: 400; }
+    details.note[open] summary::after { content: "–"; }
+    details.note ul { margin: 0 0 12px; padding-left: 18px; }
+    details.note li { font-size: 13.5px; color: var(--muted); margin: 4px 0; }
+
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="eyebrow" id="eyebrow">Today</p>
+      <h1 class="date" id="dateLine">—</h1>
+      <div class="seg" role="tablist">
+        <button id="tabWorkout" class="active" type="button">Workout</button>
+        <button id="tabMeals" type="button">Meals</button>
+      </div>
+    </header>
+
+    <section id="workoutView" class="view active">
+      <div class="pills" id="pills"></div>
+      <div id="workoutBody"></div>
+    </section>
+
+    <section id="mealsView" class="view">
+      <div id="mealsBody"></div>
+    </section>
+
+    <footer>Tap to check off · saved on this device · resets daily</footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const PILL_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const todayKey = DAYS[new Date().getDay()];
+    let selectedDay = todayKey;
+
+    // ---- persistence (auto-resets daily via date stamp) ----
+    const stamp = new Date().toISOString().slice(0, 10);
+    const STORE_KEY = "dailyState";
+    function loadState() {
+      try {
+        const s = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+        if (s.stamp !== stamp) return { stamp, checks: {}, picks: {} };
+        return { stamp, checks: s.checks || {}, picks: s.picks || {} };
+      } catch (e) {
+        return { stamp, checks: {}, picks: {} };
+      }
+    }
+    let state = loadState();
+    function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+    // ---- header date ----
+    const now = new Date();
+    document.getElementById("dateLine").textContent =
+      now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+    // ---- tabs ----
+    const tabW = document.getElementById("tabWorkout");
+    const tabM = document.getElementById("tabMeals");
+    const viewW = document.getElementById("workoutView");
+    const viewM = document.getElementById("mealsView");
+    const eyebrow = document.getElementById("eyebrow");
+    function setTab(which) {
+      const isW = which === "workout";
+      tabW.classList.toggle("active", isW);
+      tabM.classList.toggle("active", !isW);
+      viewW.classList.toggle("active", isW);
+      viewM.classList.toggle("active", !isW);
+      eyebrow.textContent = isW ? "Today" : "Eat well";
+    }
+    tabW.onclick = () => setTab("workout");
+    tabM.onclick = () => setTab("meals");
+
+    // ---- workout render ----
+    const pillsEl = document.getElementById("pills");
+    const bodyEl = document.getElementById("workoutBody");
+
+    function renderPills() {
+      pillsEl.innerHTML = "";
+      PILL_ORDER.forEach((d) => {
+        const b = document.createElement("button");
+        b.className = "pill" + (d === selectedDay ? " active" : "") + (d === todayKey ? " today" : "");
+        b.textContent = d[0];
+        b.title = d;
+        b.onclick = () => { selectedDay = d; renderPills(); renderWorkout(); };
+        pillsEl.appendChild(b);
+      });
+    }
+
+    function checkSvg() {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    }
+
+    function renderWorkout() {
+      const day = WORKOUT[selectedDay];
+      bodyEl.innerHTML = "";
+
+      if (day.rest) {
+        bodyEl.innerHTML =
+          '<div class="rest"><div class="big">○</div><h2>' + day.title +
+          '</h2><p>' + (day.subtitle || "") + '</p></div>';
+        return;
+      }
+
+      // collect items for progress
+      let total = 0, done = 0;
+      day.blocks.forEach((bl, bi) => bl.items.forEach((it, ii) => {
+        total++;
+        if (state.checks[itemId(selectedDay, bi, ii)]) done++;
+      }));
+
+      const head = document.createElement("div");
+      head.className = "dayhead";
+      head.innerHTML =
+        '<div><h2>' + day.title + '</h2><p>' + (day.subtitle || "") + '</p></div>' +
+        ring(total ? Math.round((done / total) * 100) : 0);
+      bodyEl.appendChild(head);
+
+      day.blocks.forEach((bl, bi) => {
+        const wrap = document.createElement("div");
+        wrap.className = "block";
+        wrap.innerHTML = '<p class="block-name">' + bl.name + "</p>";
+        const card = document.createElement("div");
+        card.className = "card";
+        bl.items.forEach((it, ii) => {
+          const id = itemId(selectedDay, bi, ii);
+          const row = document.createElement("div");
+          row.className = "item" + (state.checks[id] ? " done" : "");
+          row.innerHTML =
+            '<div class="check">' + checkSvg() + "</div>" +
+            '<div class="item-text"><div class="item-name">' + it.name + "</div>" +
+            (it.detail ? '<div class="item-detail">' + it.detail + "</div>" : "") +
+            "</div>";
+          row.onclick = () => {
+            if (state.checks[id]) delete state.checks[id];
+            else state.checks[id] = true;
+            save();
+            renderWorkout();
+          };
+          card.appendChild(row);
+        });
+        wrap.appendChild(card);
+        bodyEl.appendChild(wrap);
+      });
+    }
+
+    function itemId(day, bi, ii) { return day + ":" + bi + ":" + ii; }
+
+    function ring(pct) {
+      const r = 22, c = 2 * Math.PI * r;
+      const off = c * (1 - pct / 100);
+      return (
+        '<div class="ring"><svg width="52" height="52">' +
+        '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="5"/>' +
+        '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
+        '</svg><div class="pct">' + pct + "%</div></div>"
+      );
+    }
+
+    // ---- meals render ----
+    const mealsEl = document.getElementById("mealsBody");
+    function renderMeals() {
+      mealsEl.innerHTML = "";
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = "~" + MEALS.targetCalories + " kcal · vegetarian · PCOS-friendly";
+      mealsEl.appendChild(chip);
+
+      MEALS.sections.forEach((sec) => {
+        const wrap = document.createElement("div");
+        wrap.className = "section";
+        wrap.innerHTML =
+          '<div class="section-head"><h3>' + sec.name + "</h3></div>" +
+          '<p class="section-cap">' + sec.caption + "</p>";
+
+        const single = sec.options.length === 1;
+        sec.options.forEach((opt) => {
+          const picked = single ? true : state.picks[sec.id] === opt.id;
+          const el = document.createElement("div");
+          el.className = "opt" + (picked ? " picked" : " collapsed");
+          el.innerHTML =
+            '<div class="opt-top"><div class="opt-title">' +
+            (single ? "" : '<span class="dot"></span>') + opt.title + "</div>" +
+            (opt.meta ? '<span class="opt-meta">' + opt.meta + "</span>" : "") +
+            "</div><ul>" + opt.items.map((i) => "<li>" + i + "</li>").join("") + "</ul>";
+          if (!single) {
+            el.onclick = () => {
+              state.picks[sec.id] = state.picks[sec.id] === opt.id ? null : opt.id;
+              save();
+              renderMeals();
+            };
+          }
+          wrap.appendChild(el);
+        });
+
+        if (sec.note) {
+          const n = document.createElement("div");
+          n.className = "note-inline";
+          n.textContent = sec.note;
+          wrap.appendChild(n);
+        }
+        mealsEl.appendChild(wrap);
+      });
+
+      MEALS.notes.forEach((note) => {
+        const d = document.createElement("details");
+        d.className = "note";
+        d.innerHTML =
+          "<summary>" + note.title + "</summary><ul>" +
+          note.items.map((i) => "<li>" + i + "</li>").join("") + "</ul>";
+        mealsEl.appendChild(d);
+      });
+    }
+
+    // ---- init ----
+    renderPills();
+    renderWorkout();
+    renderMeals();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
